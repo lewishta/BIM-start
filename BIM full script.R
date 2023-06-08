@@ -1,3 +1,9 @@
+
+# To do:
+# Create ToT function. Use ToT as an input in acquisition and admin costs.
+
+
+
 calculateIncidentPopulation <- function(total_population_males, total_population_females,
                                         percent_diagnosed_males, percent_diagnosed_females,
                                         proportion_stage_IIIC_IV, percent_increase_per_year,
@@ -44,12 +50,12 @@ calculateNumPatientsTreated <- function(market_share_with_PRODUCT_Y, market_shar
 # Function to calculate the acquisition costs
 calculateAcquisitionCosts <- function(num_patients_treated, dose_per_day, unit_cost_per_drug, num_years, num_treatments) {
   # Calculate the cost per mg, cost per day, and cost per time on treatment for each drug
-  cost_per_mg <- matrix(0, nrow = num_years, ncol = num_drugs)
-  cost_per_day <- matrix(0, nrow = num_years, ncol = num_drugs)
-  cost_per_time_on_treatment <- matrix(0, nrow = num_years, ncol = num_drugs)
+  cost_per_mg <- matrix(0, nrow = num_years, ncol = num_treatments)
+  cost_per_day <- matrix(0, nrow = num_years, ncol = num_treatments)
+  cost_per_time_on_treatment <- matrix(0, nrow = num_years, ncol = num_treatments)
   
   for (i in 1:num_years) {
-    for (j in 1:num_drugs) {
+    for (j in 1:num_treatments) {
       cost_per_mg[i, j] <- unit_cost_per_drug[j] / dose_per_day[i]
       cost_per_day[i, j] <- unit_cost_per_drug[j] * dose_per_day[i]
       cost_per_time_on_treatment[i, j] <- cost_per_day[i, j] * num_patients_treated[i, j]
@@ -194,18 +200,24 @@ num_patients_treated <- calculateNumPatientsTreated(market_share_with_PRODUCT_Y,
 
 # # Calculate the acquisition costs
 unit_cost_per_drug <- c(100, 150, 200, 120, 180, 200, 120, 180)
-acquisition_costs <- calculateAcquisitionCosts(num_patients_treated$with_PRODUCT_Y,
+acquisition_costs_wY <- calculateAcquisitionCosts(num_patients_treated$with_PRODUCT_Y,
                                                dose_per_day,
                                                unit_cost_per_drug,
                                                num_years,
-                                               num_drugs)
+                                               num_treatments)
+
+acquisition_costs_woY <- calculateAcquisitionCosts(num_patients_treated$without_PRODUCT_Y,
+                                               dose_per_day,
+                                               unit_cost_per_drug,
+                                               num_years,
+                                               num_treatments)
 
 # # Calculate the administration costs
-# num_administrations_per_day <- c(2, 1, 1, 2, 3,  1, 2, 3)
-# admin_unit_cost <- 50
-# administration_costs <- calculateAdministrationCosts(num_patients_treated$with_PRODUCT_Y,
-#                                                      num_administrations_per_day,
-#                                                      admin_unit_cost)
+num_administrations_per_day <- c(2, 1, 1, 2, 3,  1, 2, 3)
+admin_unit_cost <- 50
+administration_costs <- calculateAdministrationCosts(num_patients_treated$with_PRODUCT_Y,
+                                                     num_administrations_per_day,
+                                                     admin_unit_cost)
 
 # Print the results
 
@@ -215,8 +227,10 @@ print(incident_population)
 print("Number of patients treated each year for each drug:")
 print(num_patients_treated$with_PRODUCT_Y)
 
-# print("\nAcquisition costs:")
-# print(acquisition_costs$cost_per_time_on_treatment)
+print("\nAcquisition costs (world with PRODUCT Y):")
+print(acquisition_costs_wY$cost_per_time_on_treatment)
+print("\nAcquisition costs (world without PRODUCT Y):")
+print(acquisition_costs_woY$cost_per_time_on_treatment)
 # 
 # print("\nAdministration costs:")
 # print(administration_costs$total_admin_cost_over_time_on_treatment)
