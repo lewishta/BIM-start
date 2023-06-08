@@ -1,6 +1,8 @@
 
 # To do:
 # Create ToT function. Use ToT as an input in acquisition and admin costs.
+# Vial sharing option 
+# Co-therapies need separate inputs. Results need to be presented as subtotal and total
 
 # Function to calculate the incident population in each year
 # To ADD: BRAF mutation status, subgroup analysis
