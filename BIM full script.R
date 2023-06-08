@@ -2,8 +2,6 @@
 # To do:
 # Create ToT function. Use ToT as an input in acquisition and admin costs.
 
-
-
 calculateIncidentPopulation <- function(total_population_males, total_population_females,
                                         percent_diagnosed_males, percent_diagnosed_females,
                                         proportion_stage_IIIC_IV, percent_increase_per_year,
@@ -82,13 +80,13 @@ calculateAcquisitionCosts <- function(num_patients_treated, dose_per_day, unit_c
 
 
 # Function to calculate the administration costs
-calculateAdministrationCosts <- function(num_patients_treated, num_administrations_per_day, admin_unit_cost) {
+calculateAdministrationCosts <- function(num_patients_treated, num_administrations_per_day, admin_unit_cost, num_years, num_treatments) {
   # Calculate the number of administrations per time on treatment and total administration cost over time on treatment
-  num_administrations_per_time_on_treatment <- matrix(0, nrow = 5, ncol = 8)
-  total_admin_cost_over_time_on_treatment <- matrix(0, nrow = 5, ncol = 8)
+  num_administrations_per_time_on_treatment <- matrix(0, nrow = num_years, ncol = num_treatments)
+  total_admin_cost_over_time_on_treatment <- matrix(0, nrow = num_years, ncol = num_treatments)
   
-  for (i in 1:5) {
-    for (j in 1:8) {
+  for (i in 1:num_years) {
+    for (j in 1:num_treatments) {
       num_administrations_per_time_on_treatment[i, j] <- num_administrations_per_day[j] * num_patients_treated[i, j]
       total_admin_cost_over_time_on_treatment[i, j] <- num_administrations_per_time_on_treatment[i, j] * admin_unit_cost
     }
@@ -106,6 +104,9 @@ calculateAdministrationCosts <- function(num_patients_treated, num_administratio
   return(list(num_administrations_per_time_on_treatment = num_administrations_per_time_on_treatment,
               total_admin_cost_over_time_on_treatment = total_admin_cost_over_time_on_treatment))
 }
+
+
+
 
 
 # Function to estimate the mg dose needed per day
@@ -166,11 +167,17 @@ rownames(market_share_without_PRODUCT_Y) <- paste0("Year ", 1:5)
 
 
 dose_size <- c(10, 20, 15, 12, 8, 10, 20, 15)
+
 frequencies <- c(
   "Twice a day", "Once a day", "Once weekly",
   "Once every two weeks", "Once every three weeks",
   "Twice a day", "Once a day", "Once weekly"
 )
+
+frequency_factors <- c("Twice a day" = 2, "Once a day" = 1, "Once weekly" = 1/7,
+                       "Once every two weeks" = 1/14, "Once every three weeks" = 1/21)
+
+
 forms <- c("mg", "mg", "mg/kg", "mg", "mg", "mg", "mg", "mg")
 
 weight <- 70
@@ -181,6 +188,7 @@ percent_diagnosed_males <- 0.02
 percent_diagnosed_females <- 0.015
 proportion_stage_IIIC_IV <- 0.3
 percent_increase_per_year <- 0.05
+
 
 
 incident_population <- calculateIncidentPopulation(total_population_males, total_population_females,
@@ -217,7 +225,9 @@ num_administrations_per_day <- c(2, 1, 1, 2, 3,  1, 2, 3)
 admin_unit_cost <- 50
 administration_costs <- calculateAdministrationCosts(num_patients_treated$with_PRODUCT_Y,
                                                      num_administrations_per_day,
-                                                     admin_unit_cost)
+                                                     admin_unit_cost,
+                                                     num_years,
+                                                     num_treatments)
 
 # Print the results
 
