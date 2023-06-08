@@ -56,7 +56,7 @@ calculateAcquisitionCosts <- function(num_patients_treated, dose_per_day, unit_c
     for (j in 1:num_treatments) {
       cost_per_mg[i, j] <- unit_cost_per_drug[j] / dose_per_day[i]
       cost_per_day[i, j] <- unit_cost_per_drug[j] * dose_per_day[i]
-      cost_per_time_on_treatment[i, j] <- cost_per_day[i, j] * num_patients_treated[i, j]
+      cost_per_time_on_treatment[i, j] <- cost_per_day[i, j] * num_patients_treated[i, j]  # change num_patients_treated to ToT
     }
   }
   
@@ -80,14 +80,15 @@ calculateAcquisitionCosts <- function(num_patients_treated, dose_per_day, unit_c
 
 
 # Function to calculate the administration costs
-calculateAdministrationCosts <- function(num_patients_treated, num_administrations_per_day, admin_unit_cost, num_years, num_treatments) {
+calculateAdministrationCosts <- function(num_patients_treated, num_administrations_per_day, admin_unit_cost, num_years, num_treatments, frequencies, frequency_factors) {
+
   # Calculate the number of administrations per time on treatment and total administration cost over time on treatment
   num_administrations_per_time_on_treatment <- matrix(0, nrow = num_years, ncol = num_treatments)
   total_admin_cost_over_time_on_treatment <- matrix(0, nrow = num_years, ncol = num_treatments)
   
   for (i in 1:num_years) {
     for (j in 1:num_treatments) {
-      num_administrations_per_time_on_treatment[i, j] <- num_administrations_per_day[j] * num_patients_treated[i, j]
+      num_administrations_per_time_on_treatment[i, j] <- frequency_factors[frequencies[j]] * num_patients_treated[i, j] #change num_patients_treated to ToT
       total_admin_cost_over_time_on_treatment[i, j] <- num_administrations_per_time_on_treatment[i, j] * admin_unit_cost
     }
   }
@@ -110,11 +111,8 @@ calculateAdministrationCosts <- function(num_patients_treated, num_administratio
 
 
 # Function to estimate the mg dose needed per day
-estimateDosePerDay <- function(dose_size, frequencies, forms, weight) {
-  # Define a mapping of frequency options to their corresponding factors
-  frequency_factors <- c("Twice a day" = 2, "Once a day" = 1, "Once weekly" = 1/7,
-                         "Once every two weeks" = 1/14, "Once every three weeks" = 1/21)
-  
+estimateDosePerDay <- function(dose_size, frequencies, forms, weight, frequency_factors) {
+
   # Calculate the mg per day for each drug based on the dose size, frequency factor, and form
   mg_per_day <- numeric(length(dose_size))
   
@@ -197,7 +195,7 @@ incident_population <- calculateIncidentPopulation(total_population_males, total
                                                    num_years)
 
 # Estimate the mg dose needed per day
-dose_per_day <- estimateDosePerDay(dose_size, frequencies, forms, weight)
+dose_per_day <- estimateDosePerDay(dose_size, frequencies, forms, weight, frequency_factors)
 
 # Calculate the number of patients treated each year for each drug
 num_patients_treated <- calculateNumPatientsTreated(market_share_with_PRODUCT_Y,
@@ -227,7 +225,9 @@ administration_costs <- calculateAdministrationCosts(num_patients_treated$with_P
                                                      num_administrations_per_day,
                                                      admin_unit_cost,
                                                      num_years,
-                                                     num_treatments)
+                                                     num_treatments, 
+                                                     frequencies, 
+                                                     frequency_factors)
 
 # Print the results
 
@@ -242,5 +242,5 @@ print(acquisition_costs_wY$cost_per_time_on_treatment)
 print("\nAcquisition costs (world without PRODUCT Y):")
 print(acquisition_costs_woY$cost_per_time_on_treatment)
 # 
-# print("\nAdministration costs:")
-# print(administration_costs$total_admin_cost_over_time_on_treatment)
+print("\nAdministration costs:")
+print(administration_costs$total_admin_cost_over_time_on_treatment)
