@@ -2,6 +2,8 @@
 # To do:
 # Create ToT function. Use ToT as an input in acquisition and admin costs.
 
+# Function to calculate the incident population in each year
+# To ADD: BRAF mutation status, subgroup analysis
 calculateIncidentPopulation <- function(total_population_males, total_population_females,
                                         percent_diagnosed_males, percent_diagnosed_females,
                                         proportion_stage_IIIC_IV, percent_increase_per_year,
@@ -21,6 +23,7 @@ calculateIncidentPopulation <- function(total_population_males, total_population
 
 
 # Function to calculate the number of patients treated each year for each drug
+# To ADD: BRAF mutation status, subgroup analysis
 calculateNumPatientsTreated <- function(market_share_with_PRODUCT_Y, market_share_without_PRODUCT_Y,
                                         incident_population, num_treatments, num_years) {
   
@@ -60,18 +63,9 @@ calculateAcquisitionCosts <- function(num_patients_treated, dose_per_day, unit_c
     }
   }
   
-  colnames(cost_per_mg) <- c("PRODUCT Y", "Nivolumab + PRODUCT Y", "Nivolumab + Ipilimumab",
-                             "Nivolumab monotherapy", "Ipilimumab monotherapy",
-                             "Pembrolizumab monotherapy", "Encorafenib plus binimetinib",
-                             "Trametinib plus dabrafenib")
-  colnames(cost_per_day) <- c("PRODUCT Y", "Nivolumab + PRODUCT Y", "Nivolumab + Ipilimumab",
-                              "Nivolumab monotherapy", "Ipilimumab monotherapy",
-                              "Pembrolizumab monotherapy", "Encorafenib plus binimetinib",
-                              "Trametinib plus dabrafenib")
-  colnames(cost_per_time_on_treatment) <- c("PRODUCT Y", "Nivolumab + PRODUCT Y", "Nivolumab + Ipilimumab",
-                                            "Nivolumab monotherapy", "Ipilimumab monotherapy",
-                                            "Pembrolizumab monotherapy", "Encorafenib plus binimetinib",
-                                            "Trametinib plus dabrafenib")
+  colnames(cost_per_mg) <- names_treatments
+  colnames(cost_per_day) <- names_treatments
+  colnames(cost_per_time_on_treatment) <- names_treatments
   
   return(list(cost_per_mg = cost_per_mg,
               cost_per_day = cost_per_day,
@@ -93,14 +87,8 @@ calculateAdministrationCosts <- function(num_patients_treated, num_administratio
     }
   }
   
-  colnames(num_administrations_per_time_on_treatment) <- c("PRODUCT Y", "Nivolumab + PRODUCT Y", "Nivolumab + Ipilimumab",
-                                                           "Nivolumab monotherapy", "Ipilimumab monotherapy",
-                                                           "Pembrolizumab monotherapy", "Encorafenib plus binimetinib",
-                                                           "Trametinib plus dabrafenib")
-  colnames(total_admin_cost_over_time_on_treatment) <- c("PRODUCT Y", "Nivolumab + PRODUCT Y", "Nivolumab + Ipilimumab",
-                                                         "Nivolumab monotherapy", "Ipilimumab monotherapy",
-                                                         "Pembrolizumab monotherapy", "Encorafenib plus binimetinib",
-                                                         "Trametinib plus dabrafenib")
+  colnames(num_administrations_per_time_on_treatment) <- names_treatments
+  colnames(total_admin_cost_over_time_on_treatment) <- names_treatments
   
   return(list(num_administrations_per_time_on_treatment = num_administrations_per_time_on_treatment,
               total_admin_cost_over_time_on_treatment = total_admin_cost_over_time_on_treatment))
