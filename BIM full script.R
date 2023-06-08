@@ -18,12 +18,12 @@ calculateIncidentPopulation <- function(total_population_males, total_population
 
 # Function to calculate the number of patients treated each year for each drug
 calculateNumPatientsTreated <- function(market_share_with_PRODUCT_Y, market_share_without_PRODUCT_Y,
-                                        incident_population) {
-  num_drugs <- ncol(market_share_with_PRODUCT_Y)
-  num_patients_treated_with_PRODUCT_Y <- matrix(0, nrow = nrow(market_share_with_PRODUCT_Y), ncol = num_drugs)
-  num_patients_treated_without_PRODUCT_Y <- matrix(0, nrow = nrow(market_share_with_PRODUCT_Y), ncol = num_drugs)
+                                        incident_population, num_treatments, num_years) {
   
-  for (i in 1:nrow(market_share_with_PRODUCT_Y)) {
+  num_patients_treated_with_PRODUCT_Y <- matrix(0, nrow = num_years, ncol = num_treatments)
+  num_patients_treated_without_PRODUCT_Y <- matrix(0, nrow = num_years, ncol = num_treatments)
+  
+  for (i in 1:num_years) {
     num_patients_treated_with_PRODUCT_Y[i, ] <- market_share_with_PRODUCT_Y[i, ] * incident_population[i]
     num_patients_treated_without_PRODUCT_Y[i, ] <- market_share_without_PRODUCT_Y[i, ] * incident_population[i]
   }
@@ -42,14 +42,14 @@ calculateNumPatientsTreated <- function(market_share_with_PRODUCT_Y, market_shar
 
 
 # Function to calculate the acquisition costs
-calculateAcquisitionCosts <- function(num_patients_treated, dose_per_day, unit_cost_per_drug) {
+calculateAcquisitionCosts <- function(num_patients_treated, dose_per_day, unit_cost_per_drug, num_years, num_treatments) {
   # Calculate the cost per mg, cost per day, and cost per time on treatment for each drug
-  cost_per_mg <- matrix(0, nrow = 5, ncol = 8)
-  cost_per_day <- matrix(0, nrow = 5, ncol = 8)
-  cost_per_time_on_treatment <- matrix(0, nrow = 5, ncol = 8)
+  cost_per_mg <- matrix(0, nrow = num_years, ncol = num_drugs)
+  cost_per_day <- matrix(0, nrow = num_years, ncol = num_drugs)
+  cost_per_time_on_treatment <- matrix(0, nrow = num_years, ncol = num_drugs)
   
-  for (i in 1:5) {
-    for (j in 1:8) {
+  for (i in 1:num_years) {
+    for (j in 1:num_drugs) {
       cost_per_mg[i, j] <- unit_cost_per_drug[j] / dose_per_day[i]
       cost_per_day[i, j] <- unit_cost_per_drug[j] * dose_per_day[i]
       cost_per_time_on_treatment[i, j] <- cost_per_day[i, j] * num_patients_treated[i, j]
@@ -130,7 +130,8 @@ names_treatments <- c("PROD Y", "NIV + PROD Y", "NIV + IPILI",
                       "NIV", "IPILI",
                       "PEMB", "ENCOR + BINI",
                       "TRAM + DABRA")
-
+num_treatments <- 8
+num_years <- 5
 
 # Define the market_share_with_PRODUCT_Y matrix with column and row names
 market_share_with_PRODUCT_Y <- matrix(c(0.3, 0.2, 0.4, 0.1, 0.3,
@@ -174,7 +175,7 @@ percent_diagnosed_males <- 0.02
 percent_diagnosed_females <- 0.015
 proportion_stage_IIIC_IV <- 0.3
 percent_increase_per_year <- 0.05
-num_years <- 5
+
 
 incident_population <- calculateIncidentPopulation(total_population_males, total_population_females,
                                                    percent_diagnosed_males, percent_diagnosed_females,
@@ -187,13 +188,17 @@ dose_per_day <- estimateDosePerDay(dose_size, frequencies, forms, weight)
 # Calculate the number of patients treated each year for each drug
 num_patients_treated <- calculateNumPatientsTreated(market_share_with_PRODUCT_Y,
                                                     market_share_without_PRODUCT_Y,
-                                                    incident_population)
+                                                    incident_population,
+                                                    num_treatments,
+                                                    num_years)
 
 # # Calculate the acquisition costs
-# unit_cost_per_drug <- c(100, 150, 200, 120, 180, 200, 120, 180)
-# acquisition_costs <- calculateAcquisitionCosts(num_patients_treated$with_PRODUCT_Y,
-#                                                dose_per_day,
-#                                                unit_cost_per_drug)
+unit_cost_per_drug <- c(100, 150, 200, 120, 180, 200, 120, 180)
+acquisition_costs <- calculateAcquisitionCosts(num_patients_treated$with_PRODUCT_Y,
+                                               dose_per_day,
+                                               unit_cost_per_drug,
+                                               num_years,
+                                               num_drugs)
 
 # # Calculate the administration costs
 # num_administrations_per_day <- c(2, 1, 1, 2, 3,  1, 2, 3)
