@@ -122,21 +122,25 @@ estimateDosePerDay <- function(dose_size, frequencies, forms, weight, frequency_
 
 # Inputs
 
-names_treatments <- c("PROD Y", "NIV + PROD Y", "NIV + IPILI",
+names_treatments <- c("PROD Y", "NIV (w/PROD_Y)", "PROD_Y (w/NIV)", "NIV (w/IPILI)", "IPILI (w/NIV)",
                       "NIV", "IPILI",
-                      "PEMB", "ENCOR + BINI",
-                      "TRAM + DABRA")
-num_treatments <- 8
+                      "PEMB", "ENCOR (w/BINI)", "BINI (w/ENCOR)",
+                      "TRAM (w/DABRA)", "DABRA (w/TRAM)")
+num_treatments <- 12
 time_horizon <- 5
 
 # Define the market_share_with_PRODUCT_Y matrix with column and row names
-market_share_with_PRODUCT_Y <- matrix(c(0.3, 0.2, 0.4, 0.1, 0.3,
+market_share_with_PRODUCT_Y <- matrix(c(0.3, 0.2, 0.4, 0.1, 0.3,   
                                         0.4, 0.3, 0.5, 0.2, 0.4,
                                         0.5, 0.4, 0.3, 0.2, 0.1,
                                         0.2, 0.4, 0.1, 0.3, 0.3,
                                         0.4, 0.2, 0.3, 0.2, 0.1,
                                         0.3, 0.1, 0.4, 0.2, 0.3,
                                         0.2, 0.1, 0.3, 0.4, 0.2,
+                                        0.3, 0.2, 0.1, 0.4, 0.1,
+                                        0.3, 0.2, 0.1, 0.4, 0.1,
+                                        0.3, 0.2, 0.1, 0.4, 0.1,
+                                        0.3, 0.2, 0.1, 0.4, 0.1,
                                         0.3, 0.2, 0.1, 0.4, 0.1), nrow = 5)
 colnames(market_share_with_PRODUCT_Y) <- names_treatments
 rownames(market_share_with_PRODUCT_Y) <- paste0("Year ", 1:5)
@@ -149,17 +153,23 @@ market_share_without_PRODUCT_Y <- matrix(c(0.5, 0.4, 0.6, 0.3, 0.4,
                                            0.2, 0.1, 0.3, 0.2, 0.3,
                                            0.3, 0.1, 0.4, 0.2, 0.3,
                                            0.2, 0.1, 0.3, 0.4, 0.2,
+                                           0.3, 0.2, 0.1, 0.4, 0.1,
+                                           0.2, 0.1, 0.3, 0.2, 0.3,
+                                           0.3, 0.1, 0.4, 0.2, 0.3,
+                                           0.2, 0.1, 0.3, 0.4, 0.2,
                                            0.3, 0.2, 0.1, 0.4, 0.1), nrow = 5)
 colnames(market_share_without_PRODUCT_Y) <- names_treatments
 rownames(market_share_without_PRODUCT_Y) <- paste0("Year ", 1:5)
 
 
 
-dose_size <- c(10, 20, 15, 12, 8, 10, 20, 15)
+dose_size <- c(10, 20, 15, 12, 8, 10, 20, 15, 8, 10, 20, 15)
 
 frequencies <- c(
   "Twice a day", "Once a day", "Once weekly",
   "Once every two weeks", "Once every three weeks",
+  "Twice a day", "Once a day", "Once weekly",
+  "Once every three weeks",
   "Twice a day", "Once a day", "Once weekly"
 )
 
@@ -167,7 +177,7 @@ frequency_factors <- c("Twice a day" = 2, "Once a day" = 1, "Once weekly" = 1/7,
                        "Once every two weeks" = 1/14, "Once every three weeks" = 1/21)
 
 
-forms <- c("mg", "mg", "mg/kg", "mg", "mg", "mg", "mg", "mg")
+forms <- c("mg", "mg", "mg/kg", "mg", "mg", "mg", "mg", "mg", "mg", "mg", "mg", "mg")
 
 weight <- 70
 
@@ -196,7 +206,7 @@ num_patients_treated <- calculateNumPatientsTreated(market_share_with_PRODUCT_Y,
                                                     time_horizon)
 
 # # Calculate the acquisition costs
-unit_cost_per_drug <- c(100, 150, 200, 120, 180, 200, 120, 180)
+unit_cost_per_drug <- c(100, 150, 200, 120, 180, 200, 120, 180, 180, 200, 120, 180)
 acquisition_costs_wY <- calculateAcquisitionCosts(num_patients_treated$with_PRODUCT_Y,
                                                dose_per_day,
                                                unit_cost_per_drug,
@@ -210,7 +220,7 @@ acquisition_costs_woY <- calculateAcquisitionCosts(num_patients_treated$without_
                                                num_treatments)
 
 # # Calculate the administration costs
-num_administrations_per_day <- c(2, 1, 1, 2, 3,  1, 2, 3)
+num_administrations_per_day <- c(2, 1, 1, 2, 3,  1, 2, 3, 3,  1, 2, 3)
 admin_unit_cost <- 50
 administration_costs <- calculateAdministrationCosts(num_patients_treated$with_PRODUCT_Y,
                                                      num_administrations_per_day,
@@ -226,12 +236,12 @@ print("Incident Population:")
 print(incident_population)
 
 print("Number of patients treated each year for each drug:")
-print(num_patients_treated$with_PRODUCT_Y)
+print(t(num_patients_treated$with_PRODUCT_Y))
 
 print("\nAcquisition costs (world with PRODUCT Y):")
-print(acquisition_costs_wY$cost_per_time_on_treatment)
+print(t(acquisition_costs_wY$cost_per_time_on_treatment))
 print("\nAcquisition costs (world without PRODUCT Y):")
-print(acquisition_costs_woY$cost_per_time_on_treatment)
+print(t(acquisition_costs_woY$cost_per_time_on_treatment))
 # 
 print("\nAdministration costs:")
-print(administration_costs$total_admin_cost_over_time_on_treatment)
+print(t(administration_costs$total_admin_cost_over_time_on_treatment))
