@@ -97,10 +97,6 @@ calculateAdministrationCosts <- function(num_patients_treated, num_administratio
               total_admin_cost_over_time_on_treatment = total_admin_cost_over_time_on_treatment))
 }
 
-
-
-
-
 # Function to estimate the mg dose needed per day
 estimateDosePerDay <- function(dose_size, frequencies, forms, weight, frequency_factors) {
 
@@ -119,6 +115,21 @@ estimateDosePerDay <- function(dose_size, frequencies, forms, weight, frequency_
   
   return(mg_per_day)
 }
+
+calculateWeightedAverageTimeOnTreatment <- function(proportions, dose_durations) {
+  # Check if the proportions sum to 100%
+  if (sum(proportions) != 1) {
+    stop("Proportions must sum to 100%.")
+  }
+  
+  
+  # Calculate the weighted average time on treatment
+  weighted_avg_time_on_treatment <- sum(proportions * dose_durations)
+  
+  return(weighted_avg_time_on_treatment)
+}
+
+
 
 # Inputs
 
@@ -161,6 +172,16 @@ market_share_without_PRODUCT_Y <- matrix(c(0.5, 0.4, 0.6, 0.3, 0.4,
 colnames(market_share_without_PRODUCT_Y) <- names_treatments
 rownames(market_share_without_PRODUCT_Y) <- paste0("Year ", 1:5)
 
+
+# ToT
+wks_in_month <- 4.1
+ToT_months <- c(8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8)
+ToT_weeks <- ToT_months * wks_in_month 
+IPILI_proportions <- c(0.30, 0.40, 0.20, 0.10)  # Proportions for 1 dose, 2 doses, 3 doses, 4 doses
+IPILI_dose_durations <- c(3, 6, 9, 12)
+IPILI_co_ToT <- calculateWeightedAverageTimeOnTreatment(proportions = IPILI_proportions, dose_durations = IPILI_dose_durations)
+ToT_weeks[5] <- IPILI_co_ToT
+ToT_months[5] <- ToT_weeks[5] / wks_in_month
 
 
 dose_size <- c(10, 20, 15, 12, 8, 10, 20, 15, 8, 10, 20, 15)
